@@ -500,7 +500,7 @@ body.lb-lock{overflow:hidden}
   <div class="hero-in">
     <p class="eyebrow">서대문 안산 무장애숲길</p>
     <h1><span class="yr">2026</span>서울사회복지사<br>등반대회</h1>
-    <p class="hero-sub">1,200명의 사회복지사가 함께 걷습니다.<br>안산 무장애숲길을 따라, 누구나 끝까지 걸을 수 있는 길입니다.</p>
+    <p class="hero-sub">1,200명의 사회복지사가 함께 걷습니다. 계단 없이 완만하게 이어지는 안산 무장애숲길을 따라, 누구나 끝까지 걸을 수 있는 길입니다.</p>
 
     <div class="facts">
       <div class="fact"><i>Date</i><b>2026. 9. 12.(토)</b></div>
@@ -549,7 +549,7 @@ body.lb-lock{overflow:hidden}
       </div>
       <table class="atbl">
         <thead>
-          <tr><th class="c-no">No</th><th>성함</th><th>직급</th><th>연락처</th><th>소속</th><th class="c-del"></th></tr>
+          <tr><th class="c-no">No</th><th>성함</th><th>직급</th><th>연락처</th><th id="col4head">비고</th><th class="c-del"></th></tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -575,7 +575,7 @@ body.lb-lock{overflow:hidden}
       <div class="ov"><dt>참가인원</dt><dd>1,200명</dd></div>
       <div class="ov wide"><dt>참석 대상</dt><dd>서울특별시장, 국회의원, 서대문구청장, 직능단체장, 사회복지사 등</dd></div>
       <div class="ov"><dt>공동주최</dt><dd>서울시사회복지단체연대회의<br>서울시사회복지사협회</dd></div>
-      <div class="ov"><dt>주관</dt><dd>서울시사회복지사협회 권익위원회</dd></div>
+      <div class="ov"><dt>주관</dt><dd>서울특별시사회복지사협회 권익위원회</dd></div>
     </dl>
   </section>
 
@@ -701,7 +701,7 @@ body.lb-lock{overflow:hidden}
     <p class="f-title">2026 서울사회복지사 등반대회</p>
     <dl class="f-grid">
       <div><dt>공동주최</dt><dd>서울시사회복지단체연대회의<br>서울시사회복지사협회</dd></div>
-      <div><dt>주관</dt><dd>서울시사회복지사협회 권익위원회</dd></div>
+      <div><dt>주관</dt><dd>서울특별시사회복지사협회 권익위원회</dd></div>
       <div><dt>일시 · 장소</dt><dd>2026. 9. 12.(토) 09:00~12:00<br>서대문 안산 무장애숲길</dd></div>
     </dl>
 
@@ -727,12 +727,27 @@ body.lb-lock{overflow:hidden}
   var orgCard = document.getElementById('orgCard');
   var typeBtns = document.querySelectorAll('.type-btn');
   var appType = 'single'; // 기본: 개인
+
+  // 4번째 열 라벨: 개인=소속, 단체=비고
+  var col4Head = document.getElementById('col4head');
+  function col4Label(){ return appType === 'group' ? '비고' : '소속'; }
+  function applyCol4(){
+    var label = col4Label();
+    if(col4Head) col4Head.textContent = label;
+    tbody.querySelectorAll('.j-note').forEach(function(inp){
+      inp.placeholder = label;
+      var td = inp.closest('td');
+      if(td) td.setAttribute('data-label', label);
+    });
+  }
+
   typeBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
       typeBtns.forEach(function(b){ b.classList.remove('is-on'); });
       btn.classList.add('is-on');
       appType = btn.dataset.type;
       orgCard.hidden = (appType !== 'group');
+      applyCol4();
       statusEl.hidden = true;
     });
   });
@@ -779,7 +794,7 @@ body.lb-lock{overflow:hidden}
       '<td data-label="성함"><input class="cell j-name" placeholder="성함"></td>'+
       '<td data-label="직급"><input class="cell j-rank" placeholder="직급"></td>'+
       '<td data-label="연락처"><input class="cell j-phone" inputmode="numeric" placeholder="010-1234-5678"></td>'+
-      '<td data-label="비고"><input class="cell j-note" placeholder="비고"></td>'+
+      '<td data-label="'+col4Label()+'"><input class="cell j-note" placeholder="'+col4Label()+'"></td>'+
       '<td class="c-del"><button type="button" class="del-btn" aria-label="행 삭제">'+
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/><path d="M10 11v6M14 11v6"/></svg>'+
       '</button></td>';
@@ -794,6 +809,7 @@ body.lb-lock{overflow:hidden}
     renumber();
   }
   for(var i=0;i<INIT_ROWS;i++) addRow();
+  applyCol4();
 
   document.getElementById('addRow').addEventListener('click', addRow);
 
@@ -1035,7 +1051,7 @@ body.lb-lock{overflow:hidden}
         <div><dt>보유·이용 기간</dt><dd>행사 종료 후 3개월 이내 파기 (관련 법령에 따라 보관이 필요한 경우 해당 기간 동안 보관)</dd></div>
         <div><dt>동의 거부 권리</dt><dd>개인정보 수집·이용에 대한 동의를 거부할 권리가 있습니다. 다만 동의를 거부하실 경우 참가 신청 및 안내가 제한될 수 있습니다.</dd></div>
       </dl>
-      <p class="p-foot">신청서를 제출하면 위 개인정보 수집·이용에 동의한 것으로 봅니다.<br>문의: 서울시사회복지사협회 권익위원회</p>
+      <p class="p-foot">신청서를 제출하면 위 개인정보 수집·이용에 동의한 것으로 봅니다.<br>문의: 서울특별시사회복지사협회 권익위원회</p>
     </div>
   </div>
 </div>
