@@ -5,6 +5,8 @@ import {
   getSummaryCount,
   appendSummaryRows,
   tabTitle,
+  ORG_HEADER,
+  ORG_HEADER_PERSONAL,
 } from "@/lib/sheets";
 import { sendAlimtalk, onlyDigits } from "@/lib/solapi";
 
@@ -45,11 +47,12 @@ export async function POST(req) {
     // 단체 → 단체명 탭 / 개인 → "개인" 탭 하나에 누적
     const targetTab = type === "group" ? tabTitle(org) : "개인";
     const summaryLabel = type === "group" ? org : "개인";
+    const targetHeader = type === "group" ? ORG_HEADER : ORG_HEADER_PERSONAL;
 
     // [읽기] 총괄 인원수 + 대상 탭 기존 명단을 병렬로 조회
     const [summaryStart, existing] = await Promise.all([
       getSummaryCount(),
-      getOrgRows(targetTab),
+      getOrgRows(targetTab, targetHeader),
     ]);
 
     // 기존 등록자 수집(중복 판별)
