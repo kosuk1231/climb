@@ -76,30 +76,33 @@ export async function POST(req) {
       await appendOrgRows(orgTab, orgRows);
       added = orgRows.length;
     } else {
-      // 개인: 신청자 성함으로 각각 탭 생성/누적
+      // 개인: 모든 개인 신청을 '개인' 탭 하나에 누적
+      const PERSONAL_TAB = "개인";
+      const existing = await getOrgRows(PERSONAL_TAB);
+      const seen = new Set();
+      existing.forEach((r) => {
+        const k = keyOf(r[1], r[3]); // 성함, 연락처
+        if (k) seen.add(k);
+      });
+
+      const orgRows = [];
+      let orgSeq = existing.length;
       for (const p of named) {
         const name = (p.name || "").trim();
-        const tab = tabTitle(name);
-        const existing = await getOrgRows(tab); // 해당 이름 탭 읽기(없으면 생성)
-        const seen = new Set();
-        existing.forEach((r) => {
-          const k = keyOf(r[1], r[3]);
-          if (k) seen.add(k);
-        });
         const k = keyOf(name, p.phone);
-        if (!k || seen.has(k)) continue; // 이미 등록된 사람
-
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        orgSeq += 1;
+        sumSeq += 1;
         const rank = (p.rank || "").trim();
         const phone = (p.phone || "").trim();
         const note = (p.note || "").trim();
-        const orgSeq = existing.length + 1;
-        await appendOrgRows(tab, [[orgSeq, name, rank, phone, note, ts]]);
-
-        sumSeq += 1;
+        orgRows.push([orgSeq, name, rank, phone, note, ts]);
         summaryRows.push([sumSeq, "개인", name, rank, phone, note, ts]);
         recipients.push({ name, phone });
-        added += 1;
       }
+      await appendOrgRows(PERSONAL_TAB, orgRows);
+      added = orgRows.length;
     }
 
     // 통합(총괄) 시트에 누적
