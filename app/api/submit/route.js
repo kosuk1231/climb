@@ -42,75 +42,52 @@ export async function POST(req) {
     }
 
     const ts = nowKST();
-    const recipients = [];
+    // 단체 → 단체명 탭 / 개인 → "개인" 탭 하나에 누적
+    const targetTab = type === "group" ? tabTitle(org) : "개인";
+    const summaryLabel = type === "group" ? org : "개인";
+
+    // [읽기] 총괄 인원수 + 대상 탭 기존 명단을 병렬로 조회
+    const [summaryStart, existing] = await Promise.all([
+      getSummaryCount(),
+      getOrgRows(targetTab),
+    ]);
+
+    // 기존 등록자 수집(중복 판별)
+    const seen = new Set();
+    existing.forEach((r) => {
+      const k = keyOf(r[1], r[3]); // 성함, 연락처
+      if (k) seen.add(k);
+    });
+
+    // 신규만 추출
+    const orgRows = [];
     const summaryRows = [];
-    let sumSeq = await getSummaryCount(); // 총괄 기존 인원 수
-    let added = 0;
-
-    if (type === "group") {
-      // 단체: 단체명으로 탭 하나에 누적
-      const orgTab = tabTitle(org);
-      const existing = await getOrgRows(orgTab);
-      const seen = new Set();
-      existing.forEach((r) => {
-        const k = keyOf(r[1], r[3]); // 성함, 연락처
-        if (k) seen.add(k);
-      });
-
-      const orgRows = [];
-      let orgSeq = existing.length;
-      for (const p of named) {
-        const name = (p.name || "").trim();
-        const k = keyOf(name, p.phone);
-        if (!k || seen.has(k)) continue;
-        seen.add(k);
-        orgSeq += 1;
-        sumSeq += 1;
-        const rank = (p.rank || "").trim();
-        const phone = (p.phone || "").trim();
-        const note = (p.note || "").trim();
-        orgRows.push([orgSeq, name, rank, phone, note, ts]);
-        summaryRows.push([sumSeq, org, name, rank, phone, note, ts]);
-        recipients.push({ name, phone });
-      }
-      await appendOrgRows(orgTab, orgRows);
-      added = orgRows.length;
-    } else {
-      // 개인: 모든 개인 신청을 '개인' 탭 하나에 누적
-      const PERSONAL_TAB = "개인";
-      const existing = await getOrgRows(PERSONAL_TAB);
-      const seen = new Set();
-      existing.forEach((r) => {
-        const k = keyOf(r[1], r[3]); // 성함, 연락처
-        if (k) seen.add(k);
-      });
-
-      const orgRows = [];
-      let orgSeq = existing.length;
-      for (const p of named) {
-        const name = (p.name || "").trim();
-        const k = keyOf(name, p.phone);
-        if (!k || seen.has(k)) continue;
-        seen.add(k);
-        orgSeq += 1;
-        sumSeq += 1;
-        const rank = (p.rank || "").trim();
-        const phone = (p.phone || "").trim();
-        const note = (p.note || "").trim();
-        orgRows.push([orgSeq, name, rank, phone, note, ts]);
-        summaryRows.push([sumSeq, "개인", name, rank, phone, note, ts]);
-        recipients.push({ name, phone });
-      }
-      await appendOrgRows(PERSONAL_TAB, orgRows);
-      added = orgRows.length;
+    const recipients = [];
+    let orgSeq = existing.length;
+    let sumSeq = summaryStart;
+    for (const p of named) {
+      const name = (p.name || "").trim();
+      const k = keyOf(name, p.phone);
+      if (!k || seen.has(k)) continue;
+      seen.add(k);
+      orgSeq += 1;
+      sumSeq += 1;
+      const rank = (p.rank || "").trim();
+      const phone = (p.phone || "").trim();
+      const note = (p.note || "").trim();
+      orgRows.push([orgSeq, name, rank, phone, note, ts]);
+      summaryRows.push([sumSeq, summaryLabel, name, rank, phone, note, ts]);
+      recipients.push({ name, phone });
     }
 
-    // 통합(총괄) 시트에 누적
-    await appendSummaryRows(summaryRows);
+    // [쓰기+발송] 대상 탭 저장 · 총괄 저장 · 알림톡 발송을 병렬로 처리
+    const [, , alimtalk] = await Promise.all([
+      appendOrgRows(targetTab, orgRows),
+      appendSummaryRows(summaryRows),
+      sendAlimtalk(recipients),
+    ]);
 
-    // 신규 참가자에게만 알림톡 발송
-    const alimtalk = await sendAlimtalk(recipients);
-
+    const added = orgRows.length;
     const skipped = Math.max(named.length - added, 0);
     return NextResponse.json({
       ok: true,
