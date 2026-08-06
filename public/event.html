@@ -436,13 +436,16 @@ body.lb-lock{overflow:hidden}
 @media (max-width:620px){
   .atbl thead{display:none}
   .atbl,.atbl tbody,.atbl tr,.atbl td{display:block; width:100%}
-  .atbl tr{position:relative; border:1px solid var(--line); border-radius:10px; padding:12px 12px 8px; margin-bottom:12px}
-  .atbl td{border:none; padding:5px 0; display:grid; grid-template-columns:64px 1fr; align-items:center; gap:10px}
-  .atbl td::before{content:attr(data-label); font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--muted)}
-  .c-no{text-align:left; font-weight:700; color:var(--forest)}
-  .c-no::before{content:"참가자" !important}
-  .c-del{position:absolute; top:8px; right:8px; width:auto; padding:0}
-  .c-del::before{display:none}
+  .atbl tr{position:relative; border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px}
+  .atbl td{border:none; padding:0 0 10px}
+  .atbl td:last-of-type{padding-bottom:0}
+  /* 라벨을 입력칸 위로 → 좌우 겹침 방지 */
+  .atbl td::before{display:block; content:attr(data-label); font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--muted); margin-bottom:5px}
+  .atbl .cell{font-size:16px}
+  .c-no{padding:0 0 12px; text-align:left; font-family:var(--display); font-weight:700; font-size:15px; color:var(--forest)}
+  .c-no::before{display:inline !important; content:"참가자 " !important; font-family:var(--display); font-size:15px; font-weight:700; color:var(--forest); letter-spacing:0; margin:0}
+  .c-del{position:absolute; top:10px; right:10px; width:auto; padding:0}
+  .c-del::before{display:none !important}
 }
 
 /* ---------- motion ---------- */
@@ -500,7 +503,7 @@ body.lb-lock{overflow:hidden}
   <div class="hero-in">
     <p class="eyebrow">서대문 안산 무장애숲길</p>
     <h1><span class="yr">2026</span>서울사회복지사<br>등반대회</h1>
-    <p class="hero-sub">1,200명의 사회복지사가 함께 걷습니다.<br>서대문 안산 무장애숲길을 따라, 누구나 끝까지 걸을 수 있는 길입니다.</p>
+    <p class="hero-sub">1,200명의 사회복지사가 함께 걷습니다. 계단 없이 완만하게 이어지는 안산 무장애숲길을 따라, 누구나 끝까지 걸을 수 있는 길입니다.</p>
 
     <div class="facts">
       <div class="fact"><i>Date</i><b>2026. 9. 12.(토)</b></div>
@@ -527,14 +530,14 @@ body.lb-lock{overflow:hidden}
   <section class="sec rv" id="apply">
     <div class="marker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L21 13 H15.5 V22 H8.5 V13 H3 Z"/></svg></div>
     <h2>신청</h2>
-    <p class="sec-note">개인 또는 기관·단체로 참가자를 접수합니다. 제출하면 각 참가자에게 카카오 알림톡이 발송되고, 같은 기관이 다시 제출해도 기존 명단은 그대로 유지됩니다.</p>
+    <p class="sec-note">기관·단체 또는 개인으로 참가자를 접수합니다. 제출하면 각 참가자에게 카카오 알림톡이 발송되고, 같은 기관이 다시 제출해도 기존 명단은 그대로 유지됩니다.</p>
 
     <div class="type-toggle" role="tablist" aria-label="신청 유형">
-      <button type="button" class="type-btn is-on" data-type="single">개인</button>
-      <button type="button" class="type-btn" data-type="group">단체</button>
+      <button type="button" class="type-btn is-on" data-type="group">단체</button>
+      <button type="button" class="type-btn" data-type="single">개인</button>
     </div>
 
-    <div class="form-card" id="orgCard" hidden>
+    <div class="form-card" id="orgCard">
       <label class="fld-label" for="org">기관 또는 단체명</label>
       <input id="org" class="fld-input" type="text" placeholder="예: 행복종합사회복지관" autocomplete="organization">
     </div>
@@ -715,7 +718,8 @@ body.lb-lock{overflow:hidden}
 <script>
 // ===== 신청 폼 =====
 (function(){
-  var INIT_ROWS = 8;
+  var ROWS_GROUP = 8;   // 단체: 8행
+  var ROWS_SINGLE = 1;  // 개인: 1행 (필요시 추가)
   var tbody = document.getElementById('tbody');
   var orgEl = document.getElementById('org');
   var countEl = document.getElementById('count');
@@ -723,10 +727,10 @@ body.lb-lock{overflow:hidden}
   var submitBtn = document.getElementById('submitBtn');
   if(!tbody) return;
 
-  // 개인 / 단체 토글
+  // 단체 / 개인 토글 (기본: 단체)
   var orgCard = document.getElementById('orgCard');
   var typeBtns = document.querySelectorAll('.type-btn');
-  var appType = 'single'; // 기본: 개인
+  var appType = 'group';
 
   // 4번째 열 라벨: 개인=소속, 단체=비고
   var col4Head = document.getElementById('col4head');
@@ -743,11 +747,14 @@ body.lb-lock{overflow:hidden}
 
   typeBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
+      if(btn.dataset.type === appType) return;
       typeBtns.forEach(function(b){ b.classList.remove('is-on'); });
       btn.classList.add('is-on');
       appType = btn.dataset.type;
       orgCard.hidden = (appType !== 'group');
-      applyCol4();
+      // 입력한 내용이 없으면 유형에 맞는 행 수로 다시 구성
+      if(!hasInput()) rebuildRows();
+      else applyCol4();
       statusEl.hidden = true;
     });
   });
@@ -808,8 +815,24 @@ body.lb-lock{overflow:hidden}
     });
     renumber();
   }
-  for(var i=0;i<INIT_ROWS;i++) addRow();
-  applyCol4();
+  // 입력된 내용이 하나라도 있는지
+  function hasInput(){
+    var any = false;
+    tbody.querySelectorAll('.cell').forEach(function(inp){
+      if(inp.value.trim()) any = true;
+    });
+    return any;
+  }
+  // 현재 유형에 맞는 행 수로 표를 다시 만듭니다.
+  function rebuildRows(){
+    tbody.innerHTML = '';
+    var n = (appType === 'group') ? ROWS_GROUP : ROWS_SINGLE;
+    for(var i=0;i<n;i++) addRow();
+    applyCol4();
+    updateCount();
+  }
+
+  rebuildRows();
 
   document.getElementById('addRow').addEventListener('click', addRow);
 
@@ -869,9 +892,7 @@ body.lb-lock{overflow:hidden}
       msg += '. 9월 12일(토) 서대문 안산에서 뵙겠습니다.';
       if(r.d.alimtalkError) msg += ' (알림톡 발송에 일부 문제가 있었습니다.)';
       showStatus(msg, true);
-      tbody.innerHTML = '';
-      for(var i=0;i<INIT_ROWS;i++) addRow();
-      updateCount();
+      rebuildRows();
       submitBtn.disabled = false;
     })
     .catch(function(){ showStatus('네트워크 오류입니다. 잠시 후 다시 시도해주세요.', false); submitBtn.disabled = false; });
