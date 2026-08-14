@@ -140,6 +140,47 @@ h2{
 }
 .sec-note{margin:0 0 30px; color:var(--muted); font-size:14.5px}
 
+/* ---------- 회장 인사말 ---------- */
+.letter{
+  position:relative; background:#fffdf7;
+  border:1px solid var(--line); border-radius:16px;
+  padding:34px 30px 30px; overflow:hidden;
+}
+.letter::before{ /* 상단 강조 띠 */
+  content:''; position:absolute; left:0; right:0; top:0; height:4px;
+  background:linear-gradient(90deg, var(--forest) 0%, var(--moss) 55%, var(--sun) 100%);
+}
+.letter p{margin:0 0 16px; font-size:15.5px; line-height:1.85; color:#2c3a30; letter-spacing:-.005em}
+.letter p:last-of-type{margin-bottom:0}
+.letter b{font-weight:700; color:var(--forest-dk)}
+.letter-hello{
+  font-family:var(--display); font-weight:500;
+  font-size:17px !important; line-height:1.7 !important;
+  color:var(--forest-dk) !important; margin-bottom:24px !important;
+  padding-bottom:20px; border-bottom:1px solid var(--paper-2);
+}
+.letter-hello b{font-weight:700}
+.letter-quote{
+  margin:26px 0; padding:20px 24px;
+  background:var(--paper); border-left:4px solid var(--moss); border-radius:0 12px 12px 0;
+  font-family:var(--display); font-weight:700;
+  font-size:clamp(15.5px,2.2vw,19px); line-height:1.55;
+  color:var(--forest-dk); letter-spacing:-.02em;
+}
+.letter-close{margin-top:24px !important; font-weight:600; color:var(--forest-dk) !important}
+.letter-sign{
+  margin-top:26px; padding-top:20px; border-top:1px solid var(--paper-2);
+  display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+}
+.letter-sign-org{font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase}
+.letter-sign-name{font-family:var(--display); font-weight:700; font-size:18px; color:var(--forest-dk)}
+@media (max-width:620px){
+  .letter{padding:26px 20px 22px; border-radius:14px}
+  .letter p{font-size:15px; line-height:1.8}
+  .letter-hello{font-size:16px !important}
+  .letter-quote{margin:22px 0; padding:18px 18px}
+}
+
 /* ---------- 개요 ---------- */
 .overview{
   display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0;
@@ -479,6 +520,7 @@ body.lb-lock{overflow:hidden}
 <nav class="nav">
   <div class="nav-in">
     <div class="nav-brand"><span>2026</span> 서울사회복지사 등반대회</div>
+    <a href="#greeting">인사말</a>
     <a href="#overview">개요</a>
     <a href="#schedule">일정</a>
     <a href="#course">등반코스</a>
@@ -525,6 +567,40 @@ body.lb-lock{overflow:hidden}
 </header>
 
 <main>
+
+  <!-- 회장 인사말 -->
+  <section class="sec rv" id="greeting">
+    <div class="marker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L21 13 H15.5 V22 H8.5 V13 H3 Z"/></svg></div>
+    <h2>회장 인사말</h2>
+    <p class="sec-note">서울시사회복지사협회 회장 곽경인</p>
+
+    <article class="letter">
+      <p class="letter-hello">서울시사회복지사협회 회장 <b>곽경인</b>입니다.<br>길어지는 폭염 속에 몸과 마음 모두 건강하시길 기원합니다.</p>
+
+      <p>9월 12일(토) 오전 9시, 서대문 안산에서 <b>&lt;서울사회복지사 등반대회&gt;</b>를 개최합니다.</p>
+
+      <p>이번 행사에서는 <b>“서울시 사회복지시설 종사자 처우개선의 큰 방향을 전환하자”</b>는 목표를 가지고 이슈파이팅 하고자 합니다. 현재 서울시 사회복지시설 종사자 처우개선 계획은 서울지역 사회복지시설 약 1,900개소 16,500여 명에게만 온전히 적용되고 있습니다.</p>
+
+      <p>사회복지사업법 제2조의 시설이 아니라는 이유로, 건강보험공단의 수가시설이라는 이유로, 비정규직 사업비 인력이라는 이유로 차별받고 있는 것이 복지현장의 현실입니다. 노인복지시설·서울형데이케어센터 7,000명과 중앙정부 비정규직 사업비 인력 1,200명, 구립 노인복지관 등 자치구 책임시설, 서울시 조례에 근거한 시설 등 <b>약 9천 명의 종사자들</b>도 서울시의 대표적인 복리후생제도인 종합건강검진사업, 마음지원사업, 국내외연수사업, 복지포인트 및 각종 휴가제도를 전면적으로 적용하자고 함께 외치겠습니다.</p>
+
+      <p>특히 <b>5급 사회복지사 등 직원들의 승진적체</b>를 해결하는 데도 앞장서겠습니다.</p>
+
+      <p>9월 12일 등반대회에서 각 직능별로, 기관별로, 청년들이 함께 피켓을 들고 우리의 요구를 크게 외쳐주시기를 부탁드립니다.</p>
+
+      <blockquote class="letter-quote">함께 걸으면 길이 되고, 희망이 되고, 현실이 된다고 굳게 믿습니다.</blockquote>
+
+      <p>지난 7월 6일에는 오세훈 서울시장과 협회 회장단 면담이 진행되었습니다. 8월 12일에는 서울시의회 김경우 보건복지위원장, 이인애 부위원장 면담 등을 통해 위 내용에 대한 요청을 드렸으며, 하반기 서울시의회를 통해 <b>「서울시 사회복지사 등의 처우 및 지위향상에 관한 조례」 개정</b>과 함께 관련 예산확보에도 힘쓰겠습니다.</p>
+
+      <p>늘 응원해 주시고 협회 활동에 관심가져 주심에 깊은 감사의 말씀드립니다. 언제든지 카톡으로, 문자로, 전화로 의견 주시면 성의껏 답변 드리고, 협회 운영에 반영하겠습니다.</p>
+
+      <p class="letter-close">최선을 다하겠습니다. 감사합니다.</p>
+
+      <div class="letter-sign">
+        <span class="letter-sign-org">서울시사회복지사협회</span>
+        <span class="letter-sign-name">회장 곽경인</span>
+      </div>
+    </article>
+  </section>
 
   <!-- 신청 -->
   <section class="sec rv" id="apply">
