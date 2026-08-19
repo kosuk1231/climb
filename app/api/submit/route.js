@@ -29,6 +29,7 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const type = body.type === "group" ? "group" : "single";
+    const consent = body.consent === true ? "동의" : "";
     const org = (body.organizationName || "").trim();
     const participants = Array.isArray(body.participants) ? body.participants : [];
 
@@ -77,9 +78,10 @@ export async function POST(req) {
       sumSeq += 1;
       const rank = (p.rank || "").trim();
       const phone = (p.phone || "").trim();
+      const birth = (p.birth || "").trim();
       const note = (p.note || "").trim();
-      orgRows.push([orgSeq, name, rank, phone, note, ts]);
-      summaryRows.push([sumSeq, summaryLabel, name, rank, phone, note, ts]);
+      orgRows.push([orgSeq, name, rank, phone, note, ts, birth, consent]);
+      summaryRows.push([sumSeq, summaryLabel, name, rank, phone, note, ts, birth, consent]);
       recipients.push({ name, phone });
     }
 
