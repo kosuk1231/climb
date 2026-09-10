@@ -675,7 +675,7 @@ body.lb-lock{overflow:hidden}
       <span class="closed-tag">사전 신청 마감</span>
       <p class="closed-t">사전 신청이 마감되었습니다.</p>
       <p class="closed-s"><b>9월 12일(토) 오전 8시</b>부터는 <b>현장 접수</b>에서만 접수가 가능합니다.<br>
-        당일 오전 8시에 이 페이지에서 <b>개인 신청</b>이 열립니다. 오픈 시간이 되면 새로 고침해 주세요.</p>
+        당일 오전 8시에 <b>현장에 비치된 QR코드</b>를 통해서만 접수가 가능합니다.</p>
       <p class="closed-cd" id="closedCd"></p>
     </div>
 
@@ -957,7 +957,7 @@ body.lb-lock{overflow:hidden}
       var d = Math.floor(ms/86400000);
       var h = Math.floor(ms%86400000/3600000);
       var m = Math.floor(ms%3600000/60000);
-      closedCd.textContent = '오픈까지 ' + (d>0 ? d+'일 ' : '') + h + '시간 ' + m + '분 남았습니다';
+      closedCd.textContent = '현장 접수 시작까지 ' + (d>0 ? d+'일 ' : '') + h + '시간 ' + m + '분 남았습니다';
     }
   }
   // 오픈 후에는 '개인 신청'만 접수합니다 (현장 접수 기준)
