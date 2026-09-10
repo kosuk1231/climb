@@ -142,6 +142,9 @@ h2{
 }
 .sec-note{margin:0 0 30px; color:var(--muted); font-size:14.5px}
 
+/* hidden 속성이 display 규칙보다 우선하도록 */
+[hidden]{display:none !important}
+
 /* ---------- 접수 중단 안내 ---------- */
 .closed-box{
   background:#fffdf7; border:2px solid #e8c07a; border-radius:16px;
@@ -621,7 +624,7 @@ body.lb-lock{overflow:hidden}
 
     <div class="hero-cta">
       <a href="#apply" class="btn-apply">신청하러 가기 →</a>
-      <span class="hero-cta-note">개인·단체 접수 · 신청 즉시 카카오 알림톡 발송</span>
+      <span class="hero-cta-note">9월 12일(토) 08시부터 현장 접수 · 개인 신청만 가능</span>
     </div>
   </div>
 </header>
@@ -666,13 +669,13 @@ body.lb-lock{overflow:hidden}
   <section class="sec rv" id="apply">
     <div class="marker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L21 13 H15.5 V22 H8.5 V13 H3 Z"/></svg></div>
     <h2>신청</h2>
-    <p class="sec-note">기관·단체 또는 개인으로 참가자를 접수합니다. 제출하면 각 참가자에게 카카오 알림톡이 발송되고, 같은 기관이 다시 제출해도 기존 명단은 그대로 유지됩니다.</p>
+    <p class="sec-note">9월 12일(토) 오전 8시부터 현장 접수만 진행합니다. 아래에서 개인 신청을 접수하며, 제출하면 카카오 알림톡이 발송됩니다.</p>
 
     <div class="closed-box" id="closedBox" hidden>
-      <span class="closed-tag">접수 일시 중단</span>
-      <p class="closed-t">현재 참가 신청을 받지 않습니다.</p>
-      <p class="closed-s"><b>9월 12일(토) 오전 8시</b>부터 다시 신청하실 수 있습니다.<br>
-        오픈 시간이 되면 이 페이지를 새로 고침해 주세요.</p>
+      <span class="closed-tag">사전 신청 마감</span>
+      <p class="closed-t">사전 신청이 마감되었습니다.</p>
+      <p class="closed-s"><b>9월 12일(토) 오전 8시</b>부터는 <b>현장 접수</b>에서만 접수가 가능합니다.<br>
+        당일 오전 8시에 이 페이지에서 <b>개인 신청</b>이 열립니다. 오픈 시간이 되면 새로 고침해 주세요.</p>
       <p class="closed-cd" id="closedCd"></p>
     </div>
 
@@ -957,6 +960,9 @@ body.lb-lock{overflow:hidden}
       closedCd.textContent = '오픈까지 ' + (d>0 ? d+'일 ' : '') + h + '시간 ' + m + '분 남았습니다';
     }
   }
+  // 오픈 후에는 '개인 신청'만 접수합니다 (현장 접수 기준)
+  var SINGLE_ONLY = true;
+
   renderGate();
   setInterval(renderGate, 30000);   // 오픈 시각이 되면 자동으로 폼이 나타납니다
 
@@ -1068,6 +1074,14 @@ body.lb-lock{overflow:hidden}
     for(var i=0;i<n;i++) addRow();
     applyCol4();
     updateCount();
+  }
+
+  // 현장 접수 기간: 개인 신청만 접수 (단체 토글·기관명 숨김)
+  if(SINGLE_ONLY){
+    appType = 'single';
+    var tg = document.querySelector('.type-toggle');
+    if(tg) tg.hidden = true;
+    if(orgCard) orgCard.hidden = true;
   }
 
   rebuildRows();
