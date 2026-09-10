@@ -42,7 +42,18 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const type = body.type === "group" ? "group" : "single";
+    // 현장 접수 기간에는 개인 신청만 접수합니다.
+    if (body.type === "group") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "현재는 현장 접수 기간으로 개인 신청만 접수합니다. 단체 신청은 마감되었습니다.",
+        },
+        { status: 403 }
+      );
+    }
+    const type = "single";
     const consent = body.consent === true ? "동의" : "";
     const org = (body.organizationName || "").trim();
     const participants = Array.isArray(body.participants) ? body.participants : [];
