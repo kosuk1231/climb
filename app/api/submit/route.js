@@ -25,8 +25,22 @@ function nowKST() {
   return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
 }
 
+// 접수 오픈 시각 (한국시간 2026-09-12 08:00). 이 시각 전에는 접수를 받지 않습니다.
+const OPEN_AT = new Date("2026-09-12T08:00:00+09:00");
+
 export async function POST(req) {
   try {
+    if (Date.now() < OPEN_AT.getTime()) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "현재 접수가 중단되어 있습니다. 9월 12일(토) 오전 8시부터 신청하실 수 있습니다.",
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const type = body.type === "group" ? "group" : "single";
     const consent = body.consent === true ? "동의" : "";
