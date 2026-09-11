@@ -28,9 +28,33 @@ function nowKST() {
 // 접수 오픈 시각 (한국시간 2026-09-12 08:00). 이 시각 전에는 접수를 받지 않습니다.
 const OPEN_AT = new Date("2026-09-12T08:00:00+09:00");
 
+// 오픈 전에 실제 제출까지 점검할 때 쓰는 열쇠.
+// 주소 뒤에 ?test=이값 을 붙여 접속하면 오픈 전에도 제출이 됩니다. (외부에 알리지 마세요)
+const TEST_KEY = "sasw-0912-check";
+
+// 긴급 시 true 로 바꾸고 배포하면 시각과 무관하게 즉시 열립니다.
+const FORCE_OPEN = false;
+
+// 현재 접수 상태 확인용 (브라우저에서 /api/submit 으로 접속하면 보입니다)
+export async function GET() {
+  const now = Date.now();
+  const open = FORCE_OPEN || now >= OPEN_AT.getTime();
+  return NextResponse.json({
+    서버시각_한국: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
+    오픈예정_한국: OPEN_AT.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
+    접수열림: open,
+    남은시간_분: open ? 0 : Math.ceil((OPEN_AT.getTime() - now) / 60000),
+    강제오픈: FORCE_OPEN,
+  });
+}
+
 export async function POST(req) {
   try {
-    if (Date.now() < OPEN_AT.getTime()) {
+    const body = await req.json();
+
+    const isOpen = FORCE_OPEN || Date.now() >= OPEN_AT.getTime();
+    const isTest = body.testKey === TEST_KEY;
+    if (!isOpen && !isTest) {
       return NextResponse.json(
         {
           ok: false,
@@ -40,8 +64,6 @@ export async function POST(req) {
         { status: 403 }
       );
     }
-
-    const body = await req.json();
     // 현장 접수 기간에는 개인 신청만 접수합니다.
     if (body.type === "group") {
       return NextResponse.json(
