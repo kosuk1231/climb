@@ -942,11 +942,26 @@ body.lb-lock{overflow:hidden}
 
   // ===== 접수 오픈 시각 (한국시간 2026-09-12 08:00) =====
   var OPEN_AT = new Date('2026-09-12T08:00:00+09:00');
+
+  // [점검용] 주소 뒤에 붙여서 미리 확인할 수 있습니다.
+  //   ?preview=open   → 화면만 미리보기 (제출은 서버가 막습니다)
+  //   ?test=열쇠      → 실제 제출까지 점검 (열쇠는 route.js 의 TEST_KEY 와 같아야 함)
+  //   ?preview=closed → 오픈 이후에도 마감 화면 확인
+  var TEST_KEY = 'sasw-0912-check';
+  var FORCE_OPEN = false;   // 긴급 시 true 로 바꾸고 배포하면 즉시 열립니다.
+  var qs = new URLSearchParams(location.search);
+  var testMode    = qs.get('test') === TEST_KEY;
+  var previewOpen = qs.get('preview') === 'open' || testMode;
+  var previewShut = qs.get('preview') === 'closed';
   var closedBox = document.getElementById('closedBox');
   var applyBody = document.getElementById('applyBody');
   var closedCd  = document.getElementById('closedCd');
 
-  function isClosed(){ return new Date() < OPEN_AT; }
+  function isClosed(){
+    if(previewShut) return true;
+    if(FORCE_OPEN || previewOpen) return false;
+    return new Date() < OPEN_AT;
+  }
 
   function renderGate(){
     var closed = isClosed();
@@ -962,6 +977,16 @@ body.lb-lock{overflow:hidden}
   }
   // 오픈 후에는 '개인 신청'만 접수합니다 (현장 접수 기준)
   var SINGLE_ONLY = true;
+
+  if(previewOpen || previewShut){
+    var tip = document.createElement('p');
+    tip.style.cssText = 'margin:0 0 14px;padding:10px 14px;border-radius:10px;background:#fff3e6;border:1px solid #f0c9a0;color:#8a4b00;font-size:13px;font-weight:700';
+    tip.textContent = testMode
+      ? '[점검 모드] 실제 제출까지 점검합니다. 시트에 기록되고 알림톡이 발송되니 테스트 후 삭제하세요.'
+      : (previewShut ? '[점검 모드] 마감 화면 미리보기입니다.' : '[점검 모드] 오픈 화면 미리보기입니다. 제출은 서버가 막습니다.');
+    var sec = document.getElementById('apply');
+    if(sec) sec.insertBefore(tip, sec.querySelector('#closedBox'));
+  }
 
   renderGate();
   setInterval(renderGate, 30000);   // 오픈 시각이 되면 자동으로 폼이 나타납니다
@@ -1162,7 +1187,7 @@ body.lb-lock{overflow:hidden}
     fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: appType, organizationName: org, consent: true, participants: participants })
+      body: JSON.stringify({ type: appType, organizationName: org, consent: true, participants: participants, testKey: testMode ? TEST_KEY : undefined })
     })
     .then(function(res){ return res.json().then(function(d){ return { ok: res.ok, d: d }; }); })
     .then(function(r){
